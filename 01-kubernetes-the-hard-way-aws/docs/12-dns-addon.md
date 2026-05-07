@@ -4,10 +4,12 @@ In this lab you will deploy the [DNS add-on](https://kubernetes.io/docs/concepts
 
 ## The DNS Cluster Add-on
 
-Deploy the `coredns` cluster add-on:
+Deploy the `coredns` cluster add-on.
 
-```
-kubectl apply -f https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml
+> **Note**: The original Google Storage URL (`https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml`) is no longer accessible (403 Forbidden).
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/coredns/coredns/master/deployment/kubernetes/coredns.yaml.sed
 ```
 
 > output
