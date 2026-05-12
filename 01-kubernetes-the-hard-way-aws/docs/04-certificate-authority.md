@@ -118,14 +118,14 @@ admin.pem
 
 ### The Kubelet Client Certificates
 
-Kubernetes uses a [special-purpose authorization mode](https://kubernetes.io/docs/admin/authorization/node/) called Node Authorizer, that specifically authorizes API requests made by [Kubelets](https://kubernetes.io/docs/concepts/overview/components/#kubelet). In order to be authorized by the Node Authorizer, Kubelets must use a credential that identifies them as being in the `system:nodes` group, with a username of `system:node:<nodeName>`. In this section you will create a certificate for each Kubernetes worker node that meets the Node Authorizer requirements.
+Kubernetes uses a [special-purpose authorization node](https://kubernetes.io/docs/reference/access-authn-authz/node/) called Node Authorizer, that specifically authorizes API requests made by [Kubelets](https://kubernetes.io/docs/concepts/overview/components/#kubelet). In order to be authorized by the Node Authorizer, Kubelets must use a credential that identifies them as being in the `system:nodes` group, with a username of `system:node:<nodeName>`. In this section you will create a certificate for each Kubernetes worker node that meets the Node Authorizer requirements.
 
 Generate a certificate and private key for each Kubernetes worker node:
 
 ```
 for i in 0 1 2; do
   instance="worker-${i}"
-  instance_hostname="ip-10-0-1-2${i}"
+  instance_hostname="ip-10-0-1-2${i}.us-east-2.compute.internal"
   cat > ${instance}-csr.json <<EOF
 {
   "CN": "system:node:${instance_hostname}",
@@ -145,15 +145,12 @@ for i in 0 1 2; do
 }
 EOF
 
-  external_ip=$(aws ec2 describe-instances --filters \
-    "Name=tag:Name,Values=${instance}" \
-    "Name=instance-state-name,Values=running" \
-    --output text --query 'Reservations[].Instances[].PublicIpAddress')
+  external_ip=$(aws ec2 describe-instances --region us-east-2 \
+    --filters "Name=tag:Name,Values=dev-k8s-training-${instance}" \
+    --query 'Reservations[*].Instances[*].PublicIpAddress' \
+    --output text)
 
-  internal_ip=$(aws ec2 describe-instances --filters \
-    "Name=tag:Name,Values=${instance}" \
-    "Name=instance-state-name,Values=running" \
-    --output text --query 'Reservations[].Instances[].PrivateIpAddress')
+  internal_ip="10.0.1.2${i}"
 
   cfssl gencert \
     -ca=ca.pem \
@@ -161,7 +158,7 @@ EOF
     -config=ca-config.json \
     -hostname=${instance_hostname},${external_ip},${internal_ip} \
     -profile=kubernetes \
-    worker-${i}-csr.json | cfssljson -bare worker-${i}
+    ${instance}-csr.json | cfssljson -bare ${instance}
 done
 ```
 
@@ -390,8 +387,8 @@ Copy the appropriate certificates and private keys to each worker instance:
 
 ```
 for instance in worker-0 worker-1 worker-2; do
-  external_ip=$(aws ec2 describe-instances --filters \
-    "Name=tag:Name,Values=${instance}" \
+  external_ip=$(aws ec2 describe-instances --region us-east-2 --filters \
+    "Name=tag:Name,Values=dev-k8s-training-${instance}" \
     "Name=instance-state-name,Values=running" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')
 
@@ -403,8 +400,8 @@ Copy the appropriate certificates and private keys to each controller instance:
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  external_ip=$(aws ec2 describe-instances --filters \
-    "Name=tag:Name,Values=${instance}" \
+  external_ip=$(aws ec2 describe-instances --region us-east-2 --filters \
+    "Name=tag:Name,Values=dev-k8s-training-${instance}" \
     "Name=instance-state-name,Values=running" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')
 

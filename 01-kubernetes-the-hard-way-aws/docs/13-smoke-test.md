@@ -16,8 +16,8 @@ kubectl create secret generic kubernetes-the-hard-way \
 Print a hexdump of the `kubernetes-the-hard-way` secret stored in etcd:
 
 ```sh
-external_ip=$(aws ec2 describe-instances --filters \
-  "Name=tag:Name,Values=controller-0" \
+external_ip=$(aws ec2 describe-instances --region us-east-2 --filters \
+  "Name=tag:Name,Values=dev-k8s-training-controller-0" \
   "Name=instance-state-name,Values=running" \
   --output text --query 'Reservations[].Instances[].PublicIpAddress')
 
@@ -190,7 +190,7 @@ NODE_PORT=$(kubectl get svc nginx \
 Create a firewall rule that allows remote access to the `nginx` node port:
 
 ```
-aws ec2 authorize-security-group-ingress \
+aws ec2 authorize-security-group-ingress --region us-east-2 \
   --group-id ${SECURITY_GROUP_ID} \
   --protocol tcp \
   --port ${NODE_PORT} \
@@ -206,7 +206,7 @@ INSTANCE_NAME=$(kubectl get pod $POD_NAME --output=jsonpath='{.spec.nodeName}')
 Retrieve the external IP address of a worker instance:
 
 ```
-EXTERNAL_IP=$(aws ec2 describe-instances --filters \
+EXTERNAL_IP=$(aws ec2 describe-instances --region us-east-2 --filters \
     "Name=instance-state-name,Values=running" \
     "Name=network-interface.private-dns-name,Values=${INSTANCE_NAME}.*.internal*" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')

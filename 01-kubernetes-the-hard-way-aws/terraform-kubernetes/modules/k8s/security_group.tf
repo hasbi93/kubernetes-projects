@@ -14,6 +14,21 @@ resource "aws_security_group" "main_sg" {
     }
   }
 
+  # Allow all outbound traffic
+  # Required for nodes to:
+  # - Download Kubernetes binaries (kubectl, kubelet, kube-proxy, etc.) from dl.k8s.io
+  # - Download etcd, containerd, CNI plugins from GitHub releases
+  # - Pull container images from Docker Hub, gcr.io, registry.k8s.io
+  # - Access AWS metadata service and APIs
+  # - Perform DNS lookups and forward external DNS queries (CoreDNS)
+  # - Allow pods to access external services and APIs
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = merge(
     {
       Name        = "${var.environment}-${var.application}-security-group"

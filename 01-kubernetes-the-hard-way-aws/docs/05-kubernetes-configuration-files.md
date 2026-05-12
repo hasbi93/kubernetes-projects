@@ -13,7 +13,7 @@ Each kubeconfig requires a Kubernetes API Server to connect to. To support high 
 Retrieve the `kubernetes-the-hard-way` DNS address:
 
 ```
-KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers \
+KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers --region us-east-2 \
   --load-balancer-arns ${LOAD_BALANCER_ARN} \
   --output text --query 'LoadBalancers[0].DNSName')
 ```
@@ -191,8 +191,8 @@ Copy the appropriate `kubelet` and `kube-proxy` kubeconfig files to each worker 
 
 ```
 for instance in worker-0 worker-1 worker-2; do
-  external_ip=$(aws ec2 describe-instances --filters \
-    "Name=tag:Name,Values=${instance}" \
+  external_ip=$(aws ec2 describe-instances --region us-east-2 --filters \
+    "Name=tag:Name,Values=dev-k8s-training-${instance}" \
     "Name=instance-state-name,Values=running" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')
 
@@ -205,8 +205,8 @@ Copy the appropriate `kube-controller-manager` and `kube-scheduler` kubeconfig f
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  external_ip=$(aws ec2 describe-instances --filters \
-    "Name=tag:Name,Values=${instance}" \
+  external_ip=$(aws ec2 describe-instances --region us-east-2 --filters \
+    "Name=tag:Name,Values=dev-k8s-training-${instance}" \
     "Name=instance-state-name,Values=running" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')
   

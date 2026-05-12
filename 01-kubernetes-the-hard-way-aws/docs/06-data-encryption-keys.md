@@ -39,8 +39,8 @@ Copy the `encryption-config.yaml` encryption config file to each controller inst
 
 ```
 for instance in controller-0 controller-1 controller-2; do
-  external_ip=$(aws ec2 describe-instances --filters \
-    "Name=tag:Name,Values=${instance}" \
+  external_ip=$(aws ec2 describe-instances --region us-east-2 --filters \
+    "Name=tag:Name,Values=dev-k8s-training-${instance}" \
     "Name=instance-state-name,Values=running" \
     --output text --query 'Reservations[].Instances[].PublicIpAddress')
   

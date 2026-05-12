@@ -11,7 +11,7 @@ Each kubeconfig requires a Kubernetes API Server to connect to. To support high 
 Generate a kubeconfig file suitable for authenticating as the `admin` user:
 
 ```
-KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers \
+KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers --region us-east-2 \
 --load-balancer-arns ${LOAD_BALANCER_ARN} \
 --output text --query 'LoadBalancers[].DNSName')
 
